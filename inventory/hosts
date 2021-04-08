@@ -1,0 +1,19 @@
+[localhost]
+localhost1 ansible_host=127.0.0.1
+
+[lab_bigips]
+lab_BIGIP_1 ansible_host=10.1.1.1
+lab_BIGIP_2 ansible_host=10.1.1.2
+lab_BIGIP_3 ansible_host=10.1.1.3
+lab_BIGIP_4 ansible_host=10.1.1.4
+
+[BIGIP_esxi1]
+lab_BIGIP_1
+lab_BIGIP_2
+
+[BIGIP_esxi2]
+lab_BIGIP_3
+lab_BIGIP_4
+
+[vcenter]
+vcenter1 ansible_host=10.1.2.1

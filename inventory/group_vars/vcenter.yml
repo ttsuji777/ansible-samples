@@ -1,0 +1,12 @@
+---
+vcenter_ip: "10.1.1.1"
+esxi1_ip: "10.1.1.100"
+esxi2_ip: "10.1.1.101"
+vcenter_user: "xxxxx"
+vcenter_password: "xxxxx"
+vcenter_dc: "lab"
+vcenter_folder: "/lab/vm"
+BIGIP_template: "lab_BIGIP_template"
+esxi1_ds: "datastore"
+vcenter_rp: "BIGIP"
+...

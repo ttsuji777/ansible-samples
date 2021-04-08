@@ -1,0 +1,15 @@
+---
+provider:
+  validate_certs: no
+  server: "{{ ansible_host }}"
+  user: "admin"
+  password: "xxxxx"
+
+admin_user: "admin"
+admin_password: "xxxxx"
+
+root_user: "root"
+root_password: "xxxxx"
+
+mgmt_gw: "10.1.1.1"
+...
