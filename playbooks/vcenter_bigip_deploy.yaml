@@ -1,0 +1,83 @@
+# Tested with Ansible 2.10.6 and vSphere 6.7/TMOS 14.1.4
+
+---
+- name: Create BIG-IP VE VMs on VMware ESXi
+  hosts: vcenter
+  vars_files:
+  - "../inventory/group_vars/lab_bigips.yml"
+  gather_facts: no
+  connection: local
+  collections: 
+  - community.vmware.vmware_guest
+
+  tasks:
+
+    - name: Create BIG-IP VE on VMware ESXi (ESXi-1) from remote temlate located in ESXi-2
+      community.vmware.vmware_guest:
+        hostname: "{{ vcenter_ip }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_password }}"
+        name: "{{ hostvars[item].inventory_hostname }}"
+        state: "poweredoff"
+        validate_certs: "no"
+        datacenter: "{{ vcenter_dc }}"
+        folder: "{{ vcenter_folder }}"
+        template: "{{ BIGIP_template }}"
+        datastore: "{{ esxi1_ds }}"
+        esxi_hostname: "{{ esxi1_ip }}"
+        resource_pool: "{{ vcenter_rp }}"
+      loop: "{{ groups['BIGIP_esxi1'] }}"
+
+    - name: Create BIG-IP VE from local template on VMware ESXi (ESXi-2)
+      community.vmware.vmware_guest:
+        hostname: "{{ vcenter_ip }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_password }}"
+        name: "{{ hostvars[item].inventory_hostname }}"
+        state: "poweredoff"
+        validate_certs: "no"
+        datacenter: "{{ vcenter_dc }}"
+        folder: "{{ vcenter_folder }}"
+        template: "{{ BIGIP_template }}"
+        esxi_hostname: "{{ esxi2_ip }}"
+        resource_pool: "{{ vcenter_rp }}"
+      loop: "{{ groups['BIGIP_esxi2'] }}"
+
+    - name: Assign vApp properties for BIG-IP VEs
+      community.vmware.vmware_guest:
+        hostname: "{{ vcenter_ip }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_password }}"
+        name: "{{ hostvars[item].inventory_hostname }}"
+        state: "present"
+        validate_certs: "no"
+        vapp_properties:
+          - id: "net.mgmt.addr.four"
+            category: "BIG-IP VE"
+            label: "mgmt-addr"
+            value: "{{ hostvars[item].ansible_host }}/24"
+          - id: "net.mgmt.gw.four"
+            category: "BIG-IP VE"
+            label: "mgmt-gw"
+            value: "{{ mgmt_gw }}"
+          - id: "user.root.pwd"
+            category: "BIG-IP VE"
+            label: "root-pwd"
+            value: "{{ root_password }}"
+          - id: "user.admin.pwd"
+            category: "BIG-IP VE"
+            label: "admin-pwd"
+            value: "{{ admin_password }}"
+      loop: "{{ groups['lab_bigips'] }}"
+
+    - name: Power on BIG-IP VE instances on VMware ESXi
+      community.vmware.vmware_guest:
+        hostname: "{{ vcenter_ip }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_password }}"
+        name: "{{ hostvars[item].inventory_hostname }}"
+        state: "poweredon"
+        validate_certs: "no"
+        folder: "{{ vcenter_folder }}"
+      loop: "{{ groups['lab_bigips'] }}"
+...

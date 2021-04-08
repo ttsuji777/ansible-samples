@@ -1,0 +1,96 @@
+# Tested with Ansible 2.10.7
+
+---
+- name: Deploy BIG-IP VE VM on Microsoft Azure
+  hosts: localhost
+  vars_files:
+  - "../inventory/group_vars/azure_bigip.yml"
+  gather_facts: no
+  connection: local
+  collections: 
+  - azure.azcollection.azure_rm_deployment
+
+  tasks:
+
+    - name: Create BIG-IP VM using ARM template
+      azure_rm_deployment:
+        name: "BIGIP_VE"
+        resource_group: "{{ az_rg }}"
+        location: "{{ az_region }}"
+        cert_validation_mode: "ignore"
+        state: "present"
+        template_link: "https://raw.githubusercontent.com/F5Networks/f5-azure-arm-templates/master/supported/standalone/3nic/existing-stack/byol/azuredeploy.json"
+        parameters:
+          adminUsername:
+            value: "{{ admin_user }}"
+          authenticationType:
+            value: "password"
+          adminPasswordOrKey:
+            value: "{{ admin_password }}"
+          dnsLabel:
+            value: "{{ hostname }}"
+          instanceName:
+            value: "{{ hostname }}"
+          numberOfExternalIps: # allowed Values: 0-20 (integer)
+            value: 1
+          instanceType:
+            value: "{{ instance_type }}"
+          imageName:
+            value: "{{ bigip_image }}"
+          bigIpVersion:
+            value: "{{ bigip_version }}"
+          bigIpModules:
+            value: "{{ resource_provisioning }}"
+          #licenseKey1:
+          #  value: "{{ reg_key1 }}"
+          vnetName:
+            value: "{{ az_vnet }}"
+          vnetResourceGroupName:
+            value: "{{ az_rg }}"
+          mgmtSubnetName:
+            value: "{{ az_mgmtsubnet }}"
+          mgmtIpAddress:
+            value: "DYNAMIC"
+          externalSubnetName:
+            value: "{{ az_extsubnet }}"
+          externalIpAddressRangeStart:
+            value: "DYNAMIC"
+          internalSubnetName:
+            value: "{{ az_intsubnet }}"
+          internalIpAddress:
+            value: "DYNAMIC"
+          avSetChoice:
+            value: "CREATE_NEW"
+          zoneChoice:
+            value: "1" # allowed Values: "1","2","3" (strings)
+          provisionPublicIP:
+            value: "Yes"
+          declarationUrl:
+            value: "NOT_SPECIFIED"
+          ntpServer:
+            value: "{{ ntpserver }}"
+          timeZone:
+            value: "{{ timezone }}"
+          customImageUrn:
+            value: "OPTIONAL"
+          customImage:
+            value: "OPTIONAL"
+          restrictedSrcAddress:
+            value: "0.0.0.0/0"
+          tagValues:
+            value:
+              application: "APP"
+              cost: "COST"
+              environment: "ENV"
+              group: "GROUP"
+              owner: "OWNER"
+          allowUsageAnalytics:
+            value: "No"
+          allowPhoneHome:
+            value: "No"
+      register: "strings"
+
+    - name: debug output
+      debug:
+        msg: "{{ strings }}"  
+...

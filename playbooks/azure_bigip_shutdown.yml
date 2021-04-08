@@ -1,0 +1,24 @@
+# Tested with Ansible 2.10.7
+
+---
+- name: Power off BIG-IP VE VM on Microsoft Azure
+  hosts: localhost
+  vars_files:
+  - "../inventory/group_vars/azure.yml"
+  gather_facts: no
+  connection: local
+  collections: 
+  - azure.azcollection.azure_rm_virtualmachine
+
+  tasks:
+
+    - name: Shutdown a BIG-IP VE
+      azure_rm_virtualmachine:
+        resource_group: "{{ az_rg }}"
+        location: "{{ az_region }}"
+        name: "{{ hostname }}"
+        cert_validation_mode: "ignore"
+        zones: [1]
+        started: "no"
+        allocated: "no"
+...
