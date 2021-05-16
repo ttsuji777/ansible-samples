@@ -1,0 +1,45 @@
+---
+- name: Set up a VXLAN tunnel on BIG-IP for Container Ingress Service (ClusterIP)
+  hosts: mybigip
+  gather_facts: no
+  connection: local
+  collections: 
+  - f5networks.f5_modules
+
+  tasks:
+      
+    - name: Task - Create a Partition for CIS
+      bigip_partition:
+        provider: "{{ provider }}"
+        state: "present"
+        name: "kubernetes"
+    
+    - name: Task - Create a VXLAN tunnel profile
+      bigip_command:
+        provider: "{{ provider }}"
+        commands: "create net tunnels vxlan k8s-vxlan { app-service none port 8472 flooding-type none }"
+
+    - name: Task - Create a VXLAN tunnel
+      bigip_tunnel:
+        provider: "{{ provider }}"
+        state: "present"
+        name: "k8s-tunnel"
+        profile: "k8s-vxlan"
+        key: "1"
+        local_address: "{{ ext_selfip }}"
+    
+    - name: Assign Self-IP for VXLAN tunnel
+      bigip_selfip:
+        provider: "{{ provider }}"
+        name: "k8s-vxlan-selfip"
+        address: "{{ vxlan_ip }}"
+        netmask: "{{ vxlan_netmask }}"
+        vlan: "k8s-tunnel"
+        allow_service:
+          - "all"
+
+    - name: Save running configuration to disk
+      bigip_config:
+        provider: "{{ provider }}"
+        save: "yes"
+...
