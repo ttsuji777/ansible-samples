@@ -1,6 +1,6 @@
 ---
 - name: Set up a VXLAN tunnel on BIG-IP for Container Ingress Service (ClusterIP)
-  hosts: mybigip
+  hosts: lab_bigips
   gather_facts: no
   connection: local
   collections: 
